@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+require 'rubygems'
+require 'daemons'
+require 'lib/word_notifier'
+
+# Daemons.daemonize
+
+WordNotifier.new.start

@@ -1,0 +1,44 @@
+#!/bin/bash
+#
+# chkconfig: 345 70 30 
+# description: control script for daemons 
+#
+
+usage(){
+  echo $"Usage: $0 {start|stop|restart}"
+}
+
+# daemon name is required as second param
+if [ "$1" = "" ]
+  then 
+    usage
+    exit 5
+fi
+
+PROGRAM="bin/word_notifier"
+
+# if the daemon is missing, well, the daemon is missing!
+test -f $PROGRAM || exit 5
+
+# See how we were called
+case "$1" in
+  start)
+  nohup ruby $PROGRAM > /dev/null 2>&1 &
+    ;;
+  stop)
+    PID=`ps auxw | grep ${PROGRAM} | grep -v grep | awk '{ print $2 }'`
+    echo "Stopping PID: ${PID}"
+    kill $PID
+    sleep 2
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  *)
+    usage
+    exit 1
+  ;;
+esac
+
+exit 0
