@@ -1,5 +1,6 @@
 require 'ruby-growl'
 require 'json'
+require 'yaml'
 require 'nokogiri'
 
 class WordNotifier
@@ -9,20 +10,29 @@ class WordNotifier
     @growl = Growl.new "localhost", "efficient memory", ["Efficient Memory Notification"], nil, "123321"
     @words_doc = Nokogiri::XML(File.read("words.xml"))
     @words = @words_doc.xpath("//CustomizeListItem")
+    @notified_words = YAML.load_file("notified_words.yaml")
+    @notified_words = [] unless @notified_words.is_a?(Array)
   end
 
   def start
     @words.each do |word|
+      w = word["word"]
+      next if @notified_words.include?(w)
+
       3.times do
-        w = word["word"]
         # 1. translate
         translation = get_translate(w)
         # 2. growl show it
         @growl.notify "Efficient Memory Notification", w, translation
         # 3. say it
         `say #{w}`
-
         sleep(30)
+      end
+
+      @notified_words << w
+
+      File.open( 'notified_words.yaml', 'w' ) do |out|
+        YAML.dump( @notified_words, out )
       end
     end
   end
